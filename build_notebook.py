@@ -1,0 +1,180 @@
+import json
+from pathlib import Path
+
+notebook = {
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# AQUASPECT — Water Quality & Inland/Coastal Water Intelligence\n",
+    "**Arab Youth Space Hackathon: 813 Challenge — Theme 6 PoC**\n",
+    "\n",
+    "This notebook executes the end-to-end AQUASPECT analytical pipeline.\n",
+    "Based on data availability in the open STAC archives, this project employs a **Dual-AOI Strategy**:\n",
+    "1. **El Gouna (Red Sea)**: Demonstrating Planet Tanager hyperspectral capabilities (the only confirmed Egypt scene).\n",
+    "2. **Lake Manzala (Nile Delta)**: Demonstrating temporal anomaly detection and validation using Sentinel-2 against published in-situ records.\n",
+    "\n",
+    "*Note: The code below relies on the `aquaspect` local python package located in `src/`.*"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import os\n",
+    "import sys\n",
+    "from pathlib import Path\n",
+    "\n",
+    "# Ensure src/ is on the python path\n",
+    "PROJECT_ROOT = Path(os.getcwd()).parent\n",
+    "if str(PROJECT_ROOT / \"src\") not in sys.path:\n",
+    "    sys.path.insert(0, str(PROJECT_ROOT / \"src\"))\n",
+    "\n",
+    "import numpy as np\n",
+    "import pandas as pd\n",
+    "import matplotlib.pyplot as plt\n",
+    "from dotenv import load_dotenv\n",
+    "\n",
+    "# Load credentials from .env (NEVER COMMIT YOUR .ENV FILE)\n",
+    "load_dotenv(PROJECT_ROOT / \".env\")\n",
+    "\n",
+    "# AQUASPECT modules\n",
+    "from aquaspect import config, preprocessing, indices, detection, visualization, validation\n",
+    "from aquaspect.data import search_sentinel2, download_s2_band, load_raster_clip\n",
+    "\n",
+    "import h5py\n",
+    "\n",
+    "print(\"AQUASPECT environment initialized successfully.\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Phase 1: Hyperspectral Analysis (Planet Tanager)\n",
+    "**AOI**: El Gouna, Red Sea (Scene: `20250926_092059_95_4001`)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "TANAGER_FILE = PROJECT_ROOT / \"data\" / \"sample_input\" / \"20250926_092059_95_4001_ortho_sr_hdf5.h5\"\n",
+    "\n",
+    "if not TANAGER_FILE.exists():\n",
+    "    print(\"Tanager HDF5 file not found. Please run `python run_tanager.py` to download it.\")\n",
+    "else:\n",
+    "    # 1. Quality mask\n",
+    "    valid_mask, qa_stats = preprocessing.build_qa_mask(str(TANAGER_FILE))\n",
+    "    print(f\"QA Stats: {qa_stats}\")\n",
+    "\n",
+    "    # 2. Load Required Bands\n",
+    "    with h5py.File(TANAGER_FILE, \"r\") as f:\n",
+    "        wavelengths = f[\"HDFEOS/GRIDS/HYP/Data Fields/wavelength\"][:]\n",
+    "        sr = f[\"HDFEOS/GRIDS/HYP/Data Fields/surface_reflectance\"]\n",
+    "        \n",
+    "        def load_b(target_nm):\n",
+    "            idx = np.argmin(np.abs(wavelengths - target_nm))\n",
+    "            arr = sr[idx, :, :].astype(np.float32) * 1e-4\n",
+    "            arr[~valid_mask] = np.nan\n",
+    "            arr[arr < 0] = np.nan\n",
+    "            arr[arr > 1] = np.nan\n",
+    "            return arr\n",
+    "\n",
+    "        b_green = load_b(560)\n",
+    "        b_red = load_b(665)\n",
+    "        b_rededge = load_b(708)\n",
+    "        b_nir2 = load_b(860)\n",
+    "\n",
+    "    # 3. Water Mask\n",
+    "    ndwi_arr = indices.ndwi(b_green, b_nir2)\n",
+    "    water_mask_raw = indices.water_mask(ndwi_arr, threshold=0.0)\n",
+    "    water_mask, water_stats = detection.apply_water_mask(water_mask_raw & valid_mask, min_pixels=100, pixel_area_m2=900)\n",
+    "    print(f\"Water Stats: {water_stats}\")\n",
+    "    \n",
+    "    fig1 = visualization.plot_index_map(ndwi_arr, mask=valid_mask, title=\"El Gouna NDWI\")\n",
+    "    plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "if TANAGER_FILE.exists():\n",
+    "    # 4. Chlorophyll Screening\n",
+    "    ndci_arr = indices.ndci(b_rededge, b_red)\n",
+    "    chlorophyll_classes = indices.chlorophyll_screen(ndci_arr, water_mask, threshold_elevated=0.05, threshold_high=0.20)\n",
+    "    \n",
+    "    class_def = {\n",
+    "        0: (\"Normal/Low\", \"#d0d0d0\"),\n",
+    "        1: (\"Elevated\", \"#f4a582\"),\n",
+    "        2: (\"High (Anomaly Candidate)\", \"#ca0020\")\n",
+    "    }\n",
+    "    fig2 = visualization.plot_classified_map(chlorophyll_classes, class_def, title=\"Potential Chlorophyll Anomaly Screening\")\n",
+    "    plt.show()\n",
+    "\n",
+    "    # 5. Turbidity Proxy\n",
+    "    turb_arr = indices.turbidity_proxy(b_red, b_green)\n",
+    "    fig3 = visualization.plot_index_map(turb_arr, mask=water_mask, title=\"Turbidity Proxy (Red/Green)\", cmap=\"YlOrBr\")\n",
+    "    plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Phase 2: Temporal Anomaly Detection & Validation (Sentinel-2)\n",
+    "**AOI**: Lake Manzala"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "print(\"--- AQUASPECT Validation Report ---\\n\")\n",
+    "\n",
+    "val_report = validation.validation_not_possible(\n",
+    "    reason=\"Lack of concurrent in-situ physical measurements for precise NTU/chlorophyll calibration.\",\n",
+    "    attempted=[\"Cross-reference with CGLS LWQ 100m\", \"Comparison against published NIOF WQI gradients\"]\n",
+    ")\n",
+    "\n",
+    "print(json.dumps(val_report, indent=2))"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
+
+with open("c:/Users/wasfy/Downloads/AQUASPECT/notebooks/01_aquaspect_water_quality_poc.ipynb", "w", encoding="utf-8") as f:
+    json.dump(notebook, f, indent=1)
+
+print("Notebook generated successfully.")

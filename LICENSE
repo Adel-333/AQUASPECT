@@ -1,0 +1,58 @@
+MIT License
+
+Copyright (c) 2026 AQUASPECT Team
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+Data Licences and Attribution
+==============================
+
+Sentinel-2 imagery
+  Provider   : European Space Agency (ESA) / Copernicus Programme
+  Product    : Sentinel-2 MSI Level-2A (S2-L2A)
+  Licence    : Copernicus Sentinel Data Terms and Conditions
+               https://sentinel.esa.int/documents/247904/690755/Sentinel_Data_Legal_Notice
+  Access     : Microsoft Planetary Computer STAC API
+               https://planetarycomputer.microsoft.com/dataset/sentinel-2-l2a
+
+Planet Tanager hyperspectral imagery
+  Provider   : Planet Labs PBC
+  Product    : Tanager-1 Surface Reflectance
+  Licence    : Planet Education & Research Programme terms
+               https://www.planet.com/markets/education-and-research/
+  Access     : Planet STAC API (open-archive access where available)
+               https://www.planet.com/data/stac/
+
+CGLS Lake Water Quality (LWQ) 100m product
+  Provider   : Copernicus Global Land Service (CGLS)
+  Product    : Lake Water Quality 100m V2.0 (2019–present)
+  Licence    : Copernicus Land Monitoring Service data policy (free reuse with attribution)
+               https://land.copernicus.eu/
+  Parameters : Chlorophyll-a (µg/L), Turbidity (FNU), Trophic State Index, Cyanobacteria risk
+
+JRC Global Surface Water (GSW)
+  Provider   : European Commission Joint Research Centre
+  Product    : JRC Global Surface Water Explorer (Landsat-based, 1984–present)
+  Licence    : CC BY 4.0
+               https://global-surface-water.appspot.com/
+
+Reference scientific publications used for validation
+  See docs/data_sources.md for full citation list.

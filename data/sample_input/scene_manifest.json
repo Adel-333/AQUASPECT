@@ -1,0 +1,114 @@
+{
+  "_comment": "AQUASPECT scene manifest — exact scene IDs and parameters for deterministic data retrieval.",
+  "_status": "CONFIRMED for Tanager (El Gouna). Sentinel-2 scenes TBD after STAC search.",
+  "_data_discovery_date": "2026-10-03",
+  "_strategy": "Dual-AOI: Tanager for El Gouna Red Sea hyperspectral analysis; Sentinel-2 for Lake Manzala water-quality time-series.",
+
+  "aoi_tanager": {
+    "name": "El Gouna — Red Sea Coastal Water",
+    "country": "Egypt",
+    "description": "Red Sea coastal water north of El Gouna. Covered by the only confirmed open-archive Planet Tanager scene over Egypt. Suitable for coral reef / marine water quality screening.",
+    "bbox_wgs84": [33.511, 27.334, 33.758, 27.565],
+    "center_wgs84": [33.634, 27.449],
+    "target_crs": "EPSG:32636",
+    "why_selected": "Only open-archive Tanager scene over Egypt in the coastal-water-bodies collection. CC-BY-4.0 licensed. 8% cloud cover. Acquired 2025-09-26."
+  },
+
+  "aoi_sentinel2": {
+    "name": "Lake Manzala",
+    "country": "Egypt",
+    "description": "Egypt's largest coastal lagoon (~572 km²). Hypereutrophic. Receives wastewater from multiple Nile Delta drains (Bahr Al-Baqar, Hadous, El-Serw). Documented HABs and high turbidity. CGLS LWQ product available as external benchmark.",
+    "bbox_wgs84": [31.00, 30.90, 32.22, 31.35],
+    "center_wgs84": [31.61, 31.12],
+    "area_km2_approx": 572,
+    "target_crs": "EPSG:32636",
+    "why_selected": "Best Egyptian water body for validation: published NIOF in-situ WQI data, CGLS LWQ benchmark, documented HABs, strong optical signal contrast."
+  },
+
+  "tanager": {
+    "provider": "Planet Labs PBC",
+    "collection": "coastal-water-bodies",
+    "stac_base": "https://www.planet.com/data/stac/tanager-core-imagery",
+    "product": "Tanager-1 Orthorectified Surface Reflectance",
+    "license": "CC-BY-4.0",
+    "bands": 426,
+    "wavelength_range_nm": [380, 2500],
+    "spatial_resolution_m": 30,
+    "hdf5_reflectance_path": "HDFEOS/GRIDS/HYP/Data Fields/surface_reflectance",
+    "wavelength_metadata_key": "eo:center_wavelength",
+    "wavelength_unit": "micrometers",
+    "qa_fields": {
+      "nodata": "nodata_pixels",
+      "cloud": "beta_cloud_mask",
+      "cirrus": "beta_cirrus_mask"
+    },
+    "scenes": [
+      {
+        "id": "20250926_092059_95_4001",
+        "datetime": "2025-09-26T09:20:59.952Z",
+        "cloud_pct": 8,
+        "light_haze_pct": 0,
+        "gsd_m": 32.93,
+        "sun_elevation_deg": 60.9,
+        "off_nadir_deg": 4.6,
+        "bbox_wgs84": [33.511, 27.334, 33.758, 27.565],
+        "projection": "EPSG:32636",
+        "role": "primary_hyperspectral_analysis",
+        "assets": {
+          "ortho_reflectance": "https://storage.googleapis.com/open-cogs/planet-stac/tanager1-release2-core-imagery/ortho_reflectance/20250926_092059_95_4001_ortho_reflectance.h5",
+          "ortho_visual": "https://storage.googleapis.com/open-cogs/planet-stac/tanager1-release2-core-imagery/ortho_visual/20250926_092059_95_4001_ortho_visual.tif",
+          "thumbnail": "https://storage.googleapis.com/open-cogs/planet-stac/tanager1-release2-core-imagery/thumbnail/20250926_092059_95_4001_thumb.png",
+          "stac_item": "https://www.planet.com/data/stac/tanager-core-imagery/coastal-water-bodies/20250926_092059_95_4001/20250926_092059_95_4001.json"
+        }
+      }
+    ]
+  },
+
+  "sentinel2": {
+    "collection": "sentinel-2-l2a",
+    "stac_endpoint": "https://planetarycomputer.microsoft.com/api/stac/v1",
+    "max_cloud_cover_pct": 20,
+    "bands_required": ["B03", "B04", "B8A", "SCL"],
+    "date_range_baseline": "TBD",
+    "date_range_analysis": "TBD",
+    "notes": "SCL cloud classes to exclude: 3 (shadow), 8 (medium cloud), 9 (high cloud), 10 (thin cirrus)",
+    "scenes": [
+      {
+        "_note": "PLACEHOLDER — run download_data.py after filling date ranges above",
+        "id": "TBD",
+        "datetime": "TBD",
+        "cloud_pct": null,
+        "role": "baseline"
+      }
+    ]
+  },
+
+  "validation": {
+    "cgls_lwq": {
+      "product": "CGLS Lake Water Quality 100m V2.0",
+      "provider": "Copernicus Global Land Service",
+      "url": "https://land.copernicus.eu/",
+      "parameters": ["chlorophyll_a_ug_per_l", "turbidity_fnu", "trophic_state_index", "cyanobacteria_risk"],
+      "temporal_resolution": "10-day composite",
+      "spatial_resolution_m": 100,
+      "coverage_lake_manzala_confirmed": true,
+      "date_range_to_download": "TBD"
+    },
+    "jrc_gsw": {
+      "product": "JRC Global Surface Water",
+      "url": "https://global-surface-water.appspot.com/",
+      "use": "Water mask reference — permanent water occurrence layer",
+      "license": "CC-BY-4.0"
+    },
+    "published_insitu": {
+      "description": "In-situ WQI measurements from NIOF/published studies for Lake Manzala",
+      "sources": [
+        "NIOF (National Institute of Oceanography and Fisheries, Egypt) — multi-station sampling 2021–2023",
+        "Trophic State Index (TSI) papers indexed by NIH/PubMed",
+        "Egyptian Journal of Aquatic Research"
+      ],
+      "parameters_available": ["WQI", "trophic_state", "chlorophyll_indicator", "BOD5"],
+      "station_coordinates": "TBD"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+AQUASPECT — Manzala Temporal Baseline Execution Log
+=======================================================
+Search window: 2024-06-01 to 2025-05-01
+Scenes processed: 8
+
+2024-06-06 | T36RUV | cloud=0.00% | water_px=41,889 | mean_turb=-0.07308
+2024-07-21 | T36RTV | cloud=0.00% | water_px=19,329 | mean_turb=-0.08403
+2024-08-20 | T36RTV | cloud=0.00% | water_px=20,143 | mean_turb=-0.10158
+2024-09-27 | T36RUV | cloud=0.00% | water_px=28,252 | mean_turb=-0.10158
+2024-10-04 | T36RVV | cloud=5.94% | water_px=410,013 | mean_turb=-0.10437
+2024-12-28 | 20241228T093822 | cloud=0.05% | water_px=466,347 | mean_turb=-0.09021
+2025-01-30 | 20250130T124050 | cloud=0.03% | water_px=48,003 | mean_turb=-0.08750
+2025-04-27 | T36RTV | cloud=3.97% | water_px=41,281 | mean_turb=-0.07901
+
+Baseline median turbidity: -0.08886
+Baseline std turbidity: 0.01074
+
+Anomaly (last obs = 2025-04-27):
+  anomaly_normal_px: 22989
+  anomaly_elevated_px: 2343
+  anomaly_high_px: 2676
+  anomaly_extreme_px: 13273
+  z_threshold_elevated: 1.0
+  z_threshold_high: 2.0
+  z_threshold_extreme: 3.0
