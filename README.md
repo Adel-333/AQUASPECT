@@ -1,7 +1,7 @@
 # AQUASPECT
 ## Egypt Water Quality & Inland/Coastal Water Intelligence
 
-**Proof of Concept — Arab Youth Space Hackathon (813 Challenge) · Theme 6: Water Quality**
+**Proof of Concept - Arab Youth Space Hackathon (813 Challenge) · Theme 6: Water Quality**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-brightgreen.svg)](requirements.txt)
@@ -10,7 +10,7 @@
 ---
 
 ## 1. Executive Summary & Problem Statement
-Egypt's inland and coastal waters—from the vital aquaculture and fisheries in **Lake Manzala** to the marine ecosystems along the **Red Sea**—face intensifying anthropogenic pressure from agricultural runoff, industrial discharge, and urban effluent. Traditional monitoring relies on sparse, expensive, and time-delayed in-situ water sampling. 
+Egypt's inland and coastal waters (from the vital aquaculture and fisheries in **Lake Manzala** to the marine ecosystems along the **Red Sea**) face intensifying anthropogenic pressure from agricultural runoff, industrial discharge, and urban effluent. Traditional monitoring relies on sparse, expensive, and time-delayed in-situ water sampling. 
 
 **AQUASPECT** is an end-to-end Earth Observation (EO) intelligence pipeline designed to translate raw hyperspectral and multispectral satellite streams into actionable water quality screening intelligence. It bridges high-resolution spectral identification with long-term statistical anomaly detection to prioritize field inspection and protect marine resources.
 
@@ -20,9 +20,9 @@ Egypt's inland and coastal waters—from the vital aquaculture and fisheries in 
 
 | Component | Target AOI | Sensor | Key Metric / Result |
 |---|---|---|---|
-| **Hyperspectral Screening** | El Gouna (Red Sea) | Planet Tanager-1 (426 bands) | **212.37 km²** water extent mapped; continuous 376–2499 nm spectral profile extracted |
+| **Hyperspectral Screening** | El Gouna (Red Sea) | Planet Tanager-1 (426 bands) | **212.37 km²** water extent mapped; continuous 376-2499 nm spectral profile extracted |
 | **Turbidity & NDCI Proxy** | El Gouna (Red Sea) | Planet Tanager-1 | High-resolution Red/Green ratio & Red-Edge chlorophyll screening mapped |
-| **12-Month Temporal Baseline** | Lake Manzala (Delta) | Copernicus Sentinel-2 L2A | **8 distinct seasonal dates** (June 2024 – May 2025) establishing historical median & MAD |
+| **12-Month Temporal Baseline** | Lake Manzala (Delta) | Copernicus Sentinel-2 L2A | **8 distinct seasonal dates** (June 2024 - May 2025) establishing historical median & MAD |
 | **Statistical Anomaly Detection** | Lake Manzala | Sentinel-2 (2025-04-27) | **13,273 pixels (32.2%)** flagged with extreme deviation ($Z \ge 3.0$) vs. 12-month baseline |
 
 ---
@@ -32,7 +32,7 @@ AQUASPECT implements a **Dual-AOI Strategy**:
 
 1. **Planet Tanager-1 Hyperspectral Cube (`20250926_092059_95_4001`)**
    - Location: El Gouna Coast, Egypt (`[33.511°E, 27.334°N, 33.758°E, 27.565°N]`).
-   - Spectral resolution: 426 continuous bands (~376–2499 nm) at ~33 m GSD.
+   - Spectral resolution: 426 continuous bands (~376-2499 nm) at ~33 m GSD.
    - Purpose: Demonstrates hyperspectral capability to isolate fine spectral features (NDCI red-edge and water-leaving reflectance).
 
 2. **Copernicus Sentinel-2 L2A Time Stack (Lake Manzala)**
@@ -69,6 +69,7 @@ AQUASPECT/
 │   ├── figures/                   # 12-month baseline plots & 426-band spectral signatures
 │   ├── maps/                      # Water mask, NDCI chlorophyll screening, and turbidity maps
 │   └── tables/                    # CSV exports of scene metrics and anomaly statistics
+├── scripts/                       # Data processing, validation, and build automation scripts
 ├── src/
 │   └── aquaspect/                 # Modular Python package (preprocessing, indices, detection, viz)
 ├── requirements.txt               # Dependencies
