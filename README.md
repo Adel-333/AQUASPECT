@@ -63,8 +63,8 @@ AQUASPECT/
 │   └── sample_input/              # Scene manifests and STAC query scripts
 ├── docs/                          # Technical notes, phase audits, and data source citations
 ├── notebooks/
-│   ├── 03_aquaspect_final_poc_executed.ipynb   # Fully executed standalone Jupyter notebook
-│   └── 03_aquaspect_colab_executed.ipynb       # Pre-rendered notebook optimized for Google Colab
+│   ├── aquaspect_final_poc.ipynb       # Fully executed standalone Jupyter notebook
+│   └── aquaspect_colab.ipynb           # Pre-rendered notebook optimized for Google Colab
 ├── results/
 │   ├── figures/                   # 12-month baseline plots & 426-band spectral signatures
 │   ├── maps/                      # Water mask, NDCI chlorophyll screening, and turbidity maps
@@ -90,11 +90,11 @@ pip install -r requirements.txt
 ### Running the Pre-Rendered Notebook
 To view the complete analysis with all embedded maps, tables, and figures without re-downloading gigabytes of data:
 ```bash
-jupyter notebook notebooks/03_aquaspect_final_poc_executed.ipynb
+jupyter notebook notebooks/aquaspect_final_poc.ipynb
 ```
 
 ### Google Colab
-Open `notebooks/03_aquaspect_colab_executed.ipynb` directly in Google Colab. All 5 primary spatial maps, spectral signatures, and baseline charts are pre-rendered as embedded outputs.
+Open `notebooks/aquaspect_colab.ipynb` directly in Google Colab. All 5 primary spatial maps, spectral signatures, and baseline charts are pre-rendered as embedded outputs.
 
 ---
 
