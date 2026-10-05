@@ -5,59 +5,34 @@
 ```
 data/
 └── sample_input/
-    ├── README.md          ← this file
-    ├── download_data.py   ← deterministic download script
-    └── scene_manifest.json ← exact scene IDs, dates, URLs
+    ├── README.md               <- this file
+    ├── download_data.py        <- Sentinel-2 download utility
+    ├── manzala_candidate_scenes.csv <- 40 candidate cloud-free scenes discovered via STAC
+    └── scene_manifest.json     <- verified scene IDs, dates, and bounding boxes
 ```
 
 ## What goes here
 
-This directory contains **only**:
+This directory contains:
 
-1. A deterministic download script that fetches the exact scenes used in the analysis.
-2. A scene manifest (JSON) recording every scene ID, acquisition date, bounding box, and source URL.
-3. Small permitted sample clips (if the licence allows redistribution).
+1. Scene manifest (`scene_manifest.json`) recording the verified Tanager and Sentinel-2 scene IDs and coordinates.
+2. The candidate scene catalog discovered for Lake Manzala.
+3. Download scripts to retrieve specific spectral bands.
 
 ## What does NOT go here
 
-- Full Sentinel-2 scenes (hundreds of MB each)
-- Full Tanager HDF5 files (multi-GB)
-- Any restricted or commercially licensed imagery
-- API keys or credentials
+- Full Tanager HDF5 cubes (~1.08 GB) - kept locally / excluded via `.gitignore`.
+- Full raw Sentinel-2 SAFE archives.
+- API keys, tokens, or private credentials.
 
-## How to acquire the data
+## AOI 1: Lake Manzala, Egypt (Temporal Baseline AOI)
 
-Run the download script from the project root:
+- Bounding box (EPSG:4326): `[31.00°E, 30.90°N, 32.22°E, 31.35°N]`
+- Target CRS: EPSG:32636 (UTM Zone 36N)
+- Characteristics: Egypt's largest coastal lagoon (~572 km²), hypereutrophic, receives drainage from agricultural/urban canals.
 
-```bash
-python data/sample_input/download_data.py
-```
+## AOI 2: El Gouna, Red Sea, Egypt (Hyperspectral Characterization AOI)
 
-The script will:
-1. Read `scene_manifest.json` for exact scene IDs and date ranges.
-2. Search Microsoft Planetary Computer STAC for Sentinel-2 scenes.
-3. Download only the bands needed for the analysis (B03, B04, B8A, SCL).
-4. Download the CGLS LWQ validation product for the matching date.
-5. Save everything to `data/sample_input/`.
-
-**Credentials required:**
-- Set `PC_SDK_SUBSCRIPTION_KEY` in a `.env` file at the project root
-  for authenticated Planetary Computer access (free, register at
-  https://planetarycomputer.microsoft.com/).
-- For Tanager data, set `PLANET_API_KEY` in the same `.env` file.
-
-## AOI — Lake Manzala, Egypt
-
-**Bounding box (EPSG:4326):** `[31.00, 30.90, 32.22, 31.35]`
-
-**Why Lake Manzala:**
-- Egypt's largest coastal lagoon (~572 km² current extent)
-- Classified as hypereutrophic; documented harmful algal blooms (HABs)
-- Receives wastewater from multiple Nile Delta drains (Bahr Al-Baqar,
-  Hadous, El-Serw, Serw)
-- Published in-situ WQI measurements available (NIOF, 2021–2023)
-- CGLS LWQ 100m product available as external benchmark
-- Full Sentinel-2 L2A temporal coverage (~5-day revisit)
-- Strong optical signal contrast between polluted south and cleaner north
-
-**Target CRS:** EPSG:32636 (UTM Zone 36N) — appropriate for the Nile Delta region.
+- Bounding box (EPSG:4326): `[33.511°E, 27.334°N, 33.758°E, 27.565°N]`
+- Scene ID: `20250926_092059_95_4001` (Acquired 2025-09-26)
+- Characteristics: Marine and coastal waters analyzed across 426 contiguous spectral bands (376-2499 nm).

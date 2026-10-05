@@ -1,29 +1,24 @@
-# AQUASPECT — Technical Notes
+# AQUASPECT - Technical Notes
 
 ## 1. AOI Selection Rationale
 
-**Selected AOI:** Lake Manzala, Northeast Nile Delta, Egypt
-
-**Bounding box (EPSG:4326):** `[31.00, 30.90, 32.22, 31.35]`
+**Selected Dual-AOI Strategy:**
+1. **Lake Manzala, Northeast Nile Delta, Egypt** (Sentinel-2 12-month temporal baseline & anomaly analysis)
+   - Bounding box (EPSG:4326): `[31.00°E, 30.90°N, 32.22°E, 31.35°N]`
+2. **El Gouna Coast, Red Sea, Egypt** (Planet Tanager-1 426-band hyperspectral characterization)
+   - Bounding box (EPSG:4326): `[33.511°E, 27.334°N, 33.758°E, 27.565°N]`
 
 **Why Lake Manzala:**
 
 | Criterion | Assessment |
 |---|---|
 | Water quality problem | Hypereutrophic; documented HABs (*Microcystis aeruginosa*); high turbidity |
-| Optical signal strength | Strong — high chlorophyll and suspended sediment contrast across the lake |
+| Optical signal strength | Strong - high chlorophyll and suspended sediment contrast across the lake |
 | Sentinel-2 coverage | Full; ~5-day revisit; studied in peer-reviewed literature with S2 |
 | Reference/validation data | CGLS LWQ 100m product (external benchmark); NIOF in-situ WQI data (published) |
-| Spatial extent | ~572 km² — large enough for spatial statistics, small enough for manageable download |
+| Spatial extent | ~572 km² - large enough for spatial statistics, manageable processing |
 | Scientific defensibility | Most-published Egyptian water body in remote sensing literature |
-| Change detection potential | Active restoration activities → documented temporal signal |
-
-**Rejected candidates:**
-
-- Lake Burullus — strong published matchup data (MDPI 2022) but less severe HAB signal than Manzala for hyperspectral demonstration
-- Lake Qarun — inland/hypersaline, good for salinity/turbidity but less chlorophyll signal
-- Lake Mariout — too small (~50 km²) for robust spatial statistics; weak published matchup data
-- UAE starter AOI — explicitly excluded per project brief
+| Change detection potential | Active restoration activities -> documented temporal signal |
 
 ---
 
@@ -33,10 +28,8 @@
 
 **Why UTM 36N:**
 - Covers the Nile Delta / Mediterranean coast / Sinai region
-- Metric CRS → correct area/distance calculations
+- Metric CRS -> correct area/distance calculations
 - Avoids degree-based area approximations (which introduce ~40% error at 31°N)
-
-**All rasters are reprojected to EPSG:32636 before pixel-wise comparison.**
 
 ---
 
@@ -44,10 +37,10 @@
 
 | S2 Band | Central λ (nm) | Resolution | Use in AQUASPECT |
 |---|---|---|---|
-| B03 | 560 | 10 m | Green — NDWI numerator; turbidity proxy denominator |
-| B04 | 665 | 10 m | Red — NDWI/NDCI denominator; turbidity proxy numerator |
-| B8A | 865 | 20 m | NIR — NDWI denominator; resampled to 10 m for alignment |
-| SCL | — | 20 m | Scene Classification Layer — cloud/shadow/water masking |
+| B03 | 560 | 10 m | Green - NDWI numerator; turbidity proxy denominator |
+| B04 | 665 | 10 m | Red - NDWI/NDCI denominator; turbidity proxy numerator |
+| B8A | 865 | 20 m | NIR - NDWI denominator; resampled to 10 m for alignment |
+| SCL | - | 20 m | Scene Classification Layer - cloud/shadow/water masking |
 
 **SCL cloud classes excluded:** 3 (cloud shadow), 8 (medium cloud), 9 (high cloud), 10 (thin cirrus)
 
@@ -55,25 +48,23 @@
 
 ## 4. Tanager Band Selection
 
-Nearest-band lookup is performed at runtime using `preprocessing.nearest_band_index()`.
-The actual band index depends on the specific scene's wavelength array stored in the HDF5.
+Nearest-band lookup is performed at runtime using `preprocessing.nearest_band_index()` against the 426-band wavelength attribute stored in the HDF5 cube.
 
-Reference wavelength targets (from hackathon documentation):
+Reference wavelength targets:
 
-| Target (nm) | Expected actual (nm) | Diagnostic use |
+| Target (nm) | Actual Tanager Band (nm) | Diagnostic use |
 |---|---|---|
-| 443 | ~441.1 | Blue / coastal aerosol |
-| 560 | ~560.8 | Green / NDWI |
-| 665 | ~665.9 | Red / chlorophyll abs. / NDCI denominator |
-| 708 | ~705.9 | Red-edge / NDCI numerator |
-| 800 | ~801.1 | NIR plateau |
-| 860 | ~861.3 | NIR2 / NDWI denominator |
+| 443 | 441.1 | Blue / coastal aerosol |
+| 560 | 560.8 | Green / NDWI numerator |
+| 665 | 665.9 | Red / chlorophyll absorption / NDCI denominator |
+| 708 | 705.9 | Red-edge / NDCI numerator |
+| 800 | 801.1 | NIR plateau |
+| 860 | 861.3 | NIR2 / NDWI denominator |
 
-Water-vapour absorption windows excluded from spectral plots:
-- 1350–1450 nm
-- 1800–1950 nm
-
-Far-SWIR tail excluded above 2450 nm.
+Water-vapor absorption windows excluded from spectral plots:
+- 1350-1450 nm
+- 1800-1950 nm
+- Far-SWIR tail excluded above 2450 nm.
 
 ---
 
@@ -83,44 +74,35 @@ Far-SWIR tail excluded above 2450 nm.
 
 **Formula:**
 ```
-NDWI = (Green − NIR) / (Green + NIR)
+NDWI = (Green - NIR) / (Green + NIR)
 ```
 
-**Threshold:** 0.0 (McFeeters 1996 default)
-- This is an **empirical starting value** validated against the JRC GSW
-  water occurrence layer for the selected scene.
-- If accuracy is insufficient, the threshold is adjusted and documented.
-
-**Post-processing:** Connected components with fewer than 100 pixels removed
-to eliminate isolated noise detections.
-
-**Area calculation:** Uses UTM pixel area (30 m × 30 m = 900 m² for Tanager;
-10 m × 10 m = 100 m² for S2 B03/B04). Not degree-based.
+**Threshold:** 0.0 (McFeeters default)
+- Filter: Connected components with fewer than 100 pixels removed to eliminate isolated noise.
+- Area calculation: Uses UTM pixel area (30 m x 30 m = 900 m² for Tanager; 10 m x 10 m = 100 m² for S2).
 
 ---
 
-## 6. Chlorophyll / Algal-bloom Screening
+## 6. Chlorophyll / Algal-Bloom Screening
 
 **Method:** NDCI (Normalised Difference Chlorophyll Index)
 
 **Formula:**
 ```
-NDCI = (R_708 − R_665) / (R_708 + R_665)
+NDCI = (R_708 - R_665) / (R_708 + R_665)
 ```
 
-**Source:** Mishra & Mishra (2012), Remote Sensing of Environment
+*Source: Mishra & Mishra (2012), Remote Sensing of Environment*
 
 **Screening classes:**
 
 | Class | Threshold | Label |
 |---|---|---|
-| 0 | NDCI ≤ 0.05 | Low chlorophyll indicator |
-| 1 | 0.05 < NDCI ≤ 0.20 | Elevated chlorophyll indicator |
+| 0 | NDCI <= 0.05 | Low chlorophyll indicator |
+| 1 | 0.05 < NDCI <= 0.20 | Elevated chlorophyll indicator |
 | 2 | NDCI > 0.20 | High chlorophyll indicator (potential bloom screening) |
 
-**IMPORTANT:** These are screening thresholds only. Class 2 does NOT prove
-an algal bloom without independent validation. Outputs are labelled
-"candidate high-chlorophyll pixels" in all maps and tables.
+*Note: These are screening thresholds only. Class 2 does NOT prove a toxic bloom without in-situ validation.*
 
 ---
 
@@ -130,85 +112,47 @@ an algal bloom without independent validation. Outputs are labelled
 
 **Formula:**
 ```
-Turbidity proxy = (R_665 − R_560) / (R_665 + R_560)
+Turbidity proxy = (R_665 - R_560) / (R_665 + R_560)
 ```
 
-**Interpretation:** Higher values → elevated red relative to green →
-higher apparent suspended particulate load.
+**Interpretation:** Higher values -> elevated red reflectance relative to green -> higher apparent suspended particulate matter.
 
-**NOT in NTU.** Calibration to physical turbidity units requires
-concurrent in-situ measurements, which are noted as a limitation.
+*Dimensionless proxy: Calibration to physical turbidity units (NTU) requires concurrent in-situ calibration.*
 
 ---
 
 ## 8. Temporal Analysis / Anomaly Detection
 
 **Baseline construction:**
-- Collect all valid Sentinel-2 observations within the baseline date range
-- Apply identical preprocessing to each date
-- Compute pixel-wise median and MAD (robust statistics chosen because the
-  baseline sample is small: typically 5–15 dates)
+- 8 distinct seasonal observations across 12 months (June 2024 - April 2025).
+- Compute pixel-wise median and Median Absolute Deviation (MAD).
 
-**Anomaly metric:**
+**Standardized Anomaly Metric:**
 ```
-z = (observation − baseline_median) / max(baseline_MAD, 1e-4)
+z = (observation - baseline_median) / max(baseline_MAD, 1e-4)
 ```
 
-**Anomaly classes:**
+**Anomaly classification:**
 
-| z score | Class |
-|---|---|
-| z ≤ 0 | Normal |
-| 0 < z < 2 | Elevated |
-| 2 ≤ z < 3 | High anomaly |
-| z ≥ 3 | Extreme anomaly |
-
-**Cloud contamination prevention:** Only pixels with valid SCL classification
-(water class = 6) are included. Cloudy pixels set to NaN propagate correctly.
+| Z score | Class | Description |
+|---|---|---|
+| z < 1.0 | Normal | Baseline variability |
+| 1.0 <= z < 2.0 | Elevated | Noticeable increase above annual median |
+| 2.0 <= z < 3.0 | High | Significant positive deviation |
+| z >= 3.0 | Extreme | Statistically extreme event (screening priority) |
 
 ---
 
-## 9. Validation Strategy
+## 9. Validation & Scientific Limitations
 
-**Layer 1 — Water mask validation:**
-- Reference: JRC GSW water occurrence layer (Landsat-based permanent water)
-- Metrics: Precision, Recall, F1, IoU
-- Limitation: JRC is long-term average, not date-specific
+1. **Dual-AOI Strategy**:
+   The open Tanager archive contains one confirmed Egyptian scene (El Gouna, Red Sea). The long-term temporal baseline was executed over Lake Manzala using Sentinel-2 L2A.
 
-**Layer 2 — Chlorophyll screening benchmark:**
-- Reference: CGLS LWQ 100m chlorophyll-a product (10-day composite)
-- Comparison: Spatial agreement of elevated NDCI zones with CGLS high-Chl-a pixels
-- Metric: Spearman correlation, spatial overlap
+2. **Dimensionless Optical Proxies**:
+   Indices are dimensionless optical proxies. Conversion to physical concentrations (µg/L Chl-a or NTU) requires concurrent local in-situ sampling.
 
-**Layer 3 — Published in-situ reference:**
-- Reference: Published WQI / trophic state data from NIOF and peer-reviewed papers
-- Comparison: Qualitative agreement of north/south pollution gradient
-- Limitation: Station coordinates from published papers may not align perfectly
-  with the analysis date
+3. **In-situ Availability**:
+   Concurrent open in-situ data from Egyptian authorities (EEAA/NIOF) were not publicly accessible for the exact satellite acquisition dates.
 
-**When validation is not possible:**
-`validation.validation_not_possible()` is called with an explicit reason
-and saved to `results/tables/validation_summary.csv`.
-
----
-
-## 10. Known Limitations
-
-1. **Tanager coverage uncertainty** — Egyptian scene coverage is being verified;
-   if no direct Manzala scene exists, the analysis will use the closest available
-   scene and note this explicitly.
-
-2. **Atmospheric correction** — Tanager surface reflectance product is used directly.
-   S2 uses L2A (Sen2Cor corrected). No additional water-column correction (e.g.
-   C2RCC, ACOLITE) is applied in the initial version — a noted limitation.
-
-3. **No calibrated physical units** — NDCI and turbidity proxy are dimensionless
-   screening indicators. Physical units (µg/L, NTU) require calibration not
-   performed in this PoC.
-
-4. **CGLS LWQ temporal mismatch** — 10-day composites may not exactly match
-   the Tanager/S2 acquisition date.
-
-5. **Small baseline sample** — Depending on cloud cover frequency over Manzala,
-   the baseline may contain fewer than 10 valid S2 dates. MAD-based statistics
-   are used to compensate, but uncertainty remains high.
+4. **Atmospheric Correction**:
+   Standard surface reflectance products (Tanager Ortho SR and Sentinel-2 Sen2Cor L2A) were utilized directly.
